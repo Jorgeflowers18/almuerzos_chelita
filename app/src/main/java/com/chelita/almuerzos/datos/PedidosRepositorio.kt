@@ -30,8 +30,8 @@ class PedidosRepositorio(
 
     /**
      * Crea un pedido nuevo (id = 0) o modifica uno existente, calculando su cobro
-     * con los precios vigentes. Al modificar se conservan el estado y la fecha originales.
-     * Devuelve el id del pedido.
+     * con los precios vigentes. Al modificar se conservan la fecha original y, si no se
+     * indica otro, el estado. Devuelve el id del pedido.
      */
     suspend fun guardarPedido(
         nombre: String,
@@ -39,6 +39,7 @@ class PedidosRepositorio(
         cantidades: Map<Producto, Int>,
         observaciones: String = "",
         id: Long = 0,
+        estado: EstadoPedido? = null,
     ): Long {
         require(nombre.isNotBlank()) { "El pedido necesita un nombre" }
         val cobro = CalculadoraCobro.calcular(cantidades, paraLlevar, precios.first())
@@ -50,7 +51,7 @@ class PedidosRepositorio(
             nombre = nombre.trim(),
             paraLlevar = paraLlevar,
             observaciones = observaciones.trim(),
-            estado = existente?.estado ?: EstadoPedido.PENDIENTE,
+            estado = estado ?: existente?.estado ?: EstadoPedido.PENDIENTE,
             fecha = existente?.fecha ?: hoy(),
             creadoEn = existente?.creadoEn ?: ahora(),
             tarrinasSegundo = cobro.tarrinasSegundo,

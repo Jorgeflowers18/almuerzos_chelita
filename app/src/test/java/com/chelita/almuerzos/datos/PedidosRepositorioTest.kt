@@ -92,6 +92,16 @@ class PedidosRepositorioTest {
     }
 
     @Test
+    fun `al editar se puede corregir el estado`() = runTest {
+        val id = repo.guardarPedido("Rosa", paraLlevar = false, mapOf(ALMUERZO to 1))
+        repo.cambiarEstado(id, EstadoPedido.PAGADO)
+
+        repo.guardarPedido("Rosa", paraLlevar = false, mapOf(ALMUERZO to 1), id = id, estado = EstadoPedido.PENDIENTE)
+
+        assertEquals(EstadoPedido.PENDIENTE, repo.obtener(id)!!.pedido.estado)
+    }
+
+    @Test
     fun `pedidos de hoy trae solo los del dia en orden de llegada`() = runTest {
         repo.guardarPedido("Ayer", paraLlevar = false, mapOf(SOPA to 1))
         hoy = hoy.plusDays(1)
