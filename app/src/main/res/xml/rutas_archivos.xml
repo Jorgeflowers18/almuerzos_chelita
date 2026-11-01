@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Las carpetas de la app que se pueden compartir: solo la de respaldos para enviar. -->
+<paths>
+    <cache-path name="respaldos" path="respaldos/" />
+</paths>

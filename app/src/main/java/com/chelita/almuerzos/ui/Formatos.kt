@@ -44,6 +44,18 @@ fun mesYAnio(fecha: LocalDate): String =
 fun horaDe(milisegundos: Long, zona: ZoneId = ZoneId.systemDefault()): String =
     Instant.ofEpochMilli(milisegundos).atZone(zona).format(DateTimeFormatter.ofPattern("HH:mm"))
 
+// Cuándo pasó algo, en palabras: "hoy a las 13:45", "ayer a las 9:05", "el 28 de octubre a las 18:30"
+fun momentoDe(milisegundos: Long, zona: ZoneId = ZoneId.systemDefault()): String {
+    val momento = Instant.ofEpochMilli(milisegundos).atZone(zona)
+    val hoy = LocalDate.now(zona)
+    val dia = when (momento.toLocalDate()) {
+        hoy -> "hoy"
+        hoy.minusDays(1) -> "ayer"
+        else -> "el " + momento.format(DateTimeFormatter.ofPattern("d 'de' MMMM", espanol))
+    }
+    return "$dia a las ${momento.format(DateTimeFormatter.ofPattern("H:mm"))}"
+}
+
 // La cuenta lista para mandarla por WhatsApp. Los asteriscos ponen el texto en negrita.
 fun textoCobro(pedido: PedidoConLineas): String {
     val p = pedido.pedido

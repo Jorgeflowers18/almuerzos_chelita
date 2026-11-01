@@ -17,12 +17,12 @@ import com.chelita.almuerzos.ui.resumen.ResumenViewModel
 // Al agregar una pantalla nueva con ViewModel, se agrega aquí su "initializer".
 val FabricaViewModels = viewModelFactory {
     initializer { NavegacionViewModel(app().repositorio) }
-    initializer { ListaPedidosViewModel(app().repositorio) }
+    initializer { ListaPedidosViewModel(app().repositorio, app().respaldos) }
     initializer { EditarPedidoViewModel(app().repositorio, createSavedStateHandle()) }
     initializer { DespachoViewModel(app().repositorio) }
     initializer { CobroViewModel(app().repositorio, createSavedStateHandle()) }
     initializer { ResumenViewModel(app().repositorio) }
-    initializer { AdministracionViewModel(app().repositorio) }
+    initializer { AdministracionViewModel(app().repositorio, app().respaldos) }
 }
 
 private fun CreationExtras.app(): AlmuerzosApp =

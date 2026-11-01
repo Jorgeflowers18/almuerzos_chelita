@@ -58,6 +58,7 @@ fun ListaPedidosScreen(
     alNuevoPedido: () -> Unit,
     alAbrirPedido: (Long) -> Unit,
     alCobrar: (Long) -> Unit,
+    alConfigurarRespaldos: () -> Unit,
     viewModel: ListaPedidosViewModel = viewModel(factory = FabricaViewModels),
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
@@ -84,6 +85,7 @@ fun ListaPedidosScreen(
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+            if (estado.sinRespaldos && !estado.cargando) AvisoSinRespaldos(alConfigurarRespaldos)
             estado.menu?.let { MenuDeHoy(it) }
             FiltrosEstado(estado.filtro, estado.conteos, viewModel::elegirFiltro)
 
@@ -106,6 +108,24 @@ fun ListaPedidosScreen(
                 }
             }
         }
+    }
+}
+
+// Aviso rojo mientras no haya carpeta de respaldos: sin ella, los datos solo viven en este celular.
+@Composable
+private fun AvisoSinRespaldos(alConfigurar: () -> Unit) {
+    Surface(
+        onClick = alConfigurar,
+        color = MaterialTheme.colorScheme.errorContainer,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+    ) {
+        Text(
+            "Los respaldos no están activados. Toca aquí para elegir la carpeta de respaldos.",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+        )
     }
 }
 

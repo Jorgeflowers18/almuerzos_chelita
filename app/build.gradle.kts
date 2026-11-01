@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.documentfile)
     ksp(libs.androidx.room.compiler)
     debugImplementation(libs.androidx.ui.tooling)
     testImplementation(libs.junit)

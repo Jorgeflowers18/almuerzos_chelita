@@ -25,6 +25,7 @@ import androidx.room.TypeConverters
 abstract class AlmuerzosDatabase : RoomDatabase() {
     abstract fun pedidoDao(): PedidoDao
     abstract fun configuracionDao(): ConfiguracionDao
+    abstract fun respaldoDao(): RespaldoDao
 
     companion object {
         const val NOMBRE_ARCHIVO = "almuerzos.db"

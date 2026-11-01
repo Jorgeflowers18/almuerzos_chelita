@@ -20,4 +20,11 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    // La app deja de verse (la mesera abrió WhatsApp, bloqueó el celular...): buen momento
+    // para guardar el respaldo automático.
+    override fun onStop() {
+        super.onStop()
+        (application as AlmuerzosApp).respaldarEnSegundoPlano()
+    }
 }

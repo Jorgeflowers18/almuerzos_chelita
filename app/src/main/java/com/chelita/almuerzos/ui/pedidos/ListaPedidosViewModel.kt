@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.chelita.almuerzos.datos.MenuDiaEntity
 import com.chelita.almuerzos.datos.PedidoConLineas
 import com.chelita.almuerzos.datos.PedidosRepositorio
+import com.chelita.almuerzos.datos.respaldo.GestorRespaldos
 import com.chelita.almuerzos.dominio.EstadoPedido
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,18 +29,27 @@ data class EstadoListaPedidos(
     val filtro: FiltroPedidos = FiltroPedidos.TODOS,
     val conteos: Map<FiltroPedidos, Int> = emptyMap(),
     val menu: MenuDiaEntity? = null,
+    val sinRespaldos: Boolean = false, // todavía no se eligió carpeta de respaldos
 )
 
 // Un ViewModel sobrevive mientras la pantalla exista y guarda su estado.
 // La pantalla solo lo observa y le avisa de las acciones de la mesera.
-class ListaPedidosViewModel(private val repositorio: PedidosRepositorio) : ViewModel() {
+class ListaPedidosViewModel(
+    private val repositorio: PedidosRepositorio,
+    respaldos: GestorRespaldos,
+) : ViewModel() {
 
     private val filtro = MutableStateFlow(FiltroPedidos.TODOS)
 
     // "combine" junta varios flujos: cada vez que cambian los pedidos, el filtro o el menú,
     // se recalcula lo que muestra la pantalla.
     val estado: StateFlow<EstadoListaPedidos> =
-        combine(repositorio.pedidosDeHoy(), filtro, repositorio.menuDeHoy()) { pedidos, filtroActual, menu ->
+        combine(
+            repositorio.pedidosDeHoy(),
+            filtro,
+            repositorio.menuDeHoy(),
+            respaldos.estado,
+        ) { pedidos, filtroActual, menu, respaldo ->
             EstadoListaPedidos(
                 cargando = false,
                 pedidos = pedidos.filter { filtroActual.estado == null || it.pedido.estado == filtroActual.estado },
@@ -48,6 +58,7 @@ class ListaPedidosViewModel(private val repositorio: PedidosRepositorio) : ViewM
                     pedidos.count { f.estado == null || it.pedido.estado == f.estado }
                 },
                 menu = menu,
+                sinRespaldos = respaldo.carpeta == null,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), EstadoListaPedidos())
 

@@ -1,5 +1,10 @@
 package com.chelita.almuerzos.ui.administracion
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,6 +23,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -34,6 +40,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -42,11 +49,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.chelita.almuerzos.datos.respaldo.EstadoRespaldos
+import com.chelita.almuerzos.datos.respaldo.TipoRespaldo
 import com.chelita.almuerzos.dominio.Precios
 import com.chelita.almuerzos.dominio.Producto
 import com.chelita.almuerzos.dominio.comoDinero
 import com.chelita.almuerzos.ui.FabricaViewModels
 import com.chelita.almuerzos.ui.fechaLarga
+import com.chelita.almuerzos.ui.momentoDe
 import java.time.LocalDate
 
 // Pantalla de administración: menú de hoy, precios y limpieza de pedidos antiguos.
@@ -59,6 +69,19 @@ fun AdministracionScreen(viewModel: AdministracionViewModel = viewModel(factory 
     val preciosGuardados by viewModel.preciosGuardados.collectAsStateWithLifecycle()
     val antiguos by viewModel.pedidosAntiguos.collectAsStateWithLifecycle()
     val limite by viewModel.limiteDeLimpieza.collectAsStateWithLifecycle()
+    val respaldo by viewModel.respaldo.collectAsStateWithLifecycle()
+    val propuesta by viewModel.propuesta.collectAsStateWithLifecycle()
+    val contexto = LocalContext.current
+
+    // Selectores de Android: uno para elegir la carpeta de respaldos y otro para elegir
+    // el archivo a restaurar. Devuelven null si la mesera cancela.
+    val elegirCarpeta = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        uri?.let(viewModel::elegirCarpeta)
+    }
+    val elegirArchivo = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let(viewModel::prepararRestauracion)
+    }
+    LaunchedEffect(Unit) { viewModel.envios.collect { compartirArchivo(contexto, it) } }
 
     val avisos = remember { SnackbarHostState() }
     var confirmarBorrado by remember { mutableStateOf(false) }
@@ -101,15 +124,33 @@ fun AdministracionScreen(viewModel: AdministracionViewModel = viewModel(factory 
                 )
             }
 
+            SeccionRespaldos(
+                estado = respaldo,
+                alElegirCarpeta = { elegirCarpeta.launch(null) },
+                alRespaldar = viewModel::respaldarAhora,
+                alEnviar = viewModel::enviarRespaldo,
+                // "*/*": WhatsApp a veces guarda el archivo sin decir que es JSON; el contenido se revisa al leerlo.
+                alRestaurar = { elegirArchivo.launch(arrayOf("*/*")) },
+            )
+
             limite?.let { SeccionLimpieza(antiguos, it, alBorrar = { confirmarBorrado = true }) }
         }
     }
+
+    propuesta?.let { DialogoRestaurar(it, viewModel::confirmarRestauracion, viewModel::cancelarRestauracion) }
 
     if (confirmarBorrado) {
         AlertDialog(
             onDismissRequest = { confirmarBorrado = false },
             title = { Text("¿Borrar pedidos antiguos?") },
-            text = { Text("Se borrarán $antiguos pedidos y no se pueden recuperar. Los resúmenes de esas fechas quedarán vacíos.") },
+            text = {
+                Text(
+                    "Antes de borrar se guardarán todos los datos en el archivo " +
+                        "\"${TipoRespaldo.ANTES_DE_LIMPIAR.archivo}\" de la carpeta de respaldos " +
+                        "(reemplaza al de la limpieza anterior). Luego se borrará" +
+                        if (antiguos == 1) " 1 pedido de este celular." else "n $antiguos pedidos de este celular.",
+                )
+            },
             confirmButton = {
                 TextButton(onClick = {
                     confirmarBorrado = false
@@ -234,6 +275,115 @@ private fun CampoMonto(
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
         modifier = modifier,
     )
+}
+
+@Composable
+private fun SeccionRespaldos(
+    estado: EstadoRespaldos,
+    alElegirCarpeta: () -> Unit,
+    alRespaldar: () -> Unit,
+    alEnviar: () -> Unit,
+    alRestaurar: () -> Unit,
+) {
+    Seccion(
+        "Respaldos",
+        "Se guarda un solo archivo que se reemplaza cada vez: al salir de la app (como mucho cada " +
+            "15 minutos) y al tocar \"Respaldar ahora\". Queda fuera de la app, así que no se pierde " +
+            "aunque se desinstale.",
+    ) {
+        if (estado.carpeta == null) {
+            Text(
+                "Todavía no hay carpeta de respaldos: los datos no se están respaldando. " +
+                    "Elige una, por ejemplo una carpeta nueva \"Respaldos Chelita\" dentro de Documentos.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.error,
+            )
+            Button(onClick = alElegirCarpeta, modifier = Modifier.fillMaxWidth().height(48.dp)) {
+                Text("Elegir carpeta de respaldos")
+            }
+        } else {
+            Column {
+                Text("Carpeta: ${estado.carpeta}", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    estado.ultimoAutomatico?.let { "Último respaldo: ${momentoDe(it)}" } ?: "Todavía no hay respaldo",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+                estado.ultimoAntesDeLimpiar?.let {
+                    Text(
+                        "Respaldo antes de limpiar: ${momentoDe(it)}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Button(onClick = alRespaldar, modifier = Modifier.fillMaxWidth().height(48.dp)) {
+                Text("Respaldar ahora")
+            }
+            TextButton(onClick = alElegirCarpeta, modifier = Modifier.fillMaxWidth()) {
+                Text("Cambiar carpeta")
+            }
+        }
+
+        HorizontalDivider()
+        Text("Pasar los datos a otro celular", style = MaterialTheme.typography.titleSmall)
+        Text(
+            "Envía el respaldo por WhatsApp, Drive o correo. En el otro celular, guarda el archivo " +
+                "y tócalo desde \"Restaurar desde archivo\".",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        OutlinedButton(onClick = alEnviar, modifier = Modifier.fillMaxWidth().height(48.dp)) {
+            Text("Enviar respaldo")
+        }
+        OutlinedButton(onClick = alRestaurar, modifier = Modifier.fillMaxWidth().height(48.dp)) {
+            Text("Restaurar desde archivo")
+        }
+    }
+}
+
+@Composable
+private fun DialogoRestaurar(propuesta: PropuestaRestauracion, alConfirmar: () -> Unit, alCancelar: () -> Unit) {
+    val pedidos = propuesta.contenido.pedidos
+    val fechas = pedidos.map { it.pedido.fecha }
+    val rango = when {
+        fechas.isEmpty() -> ""
+        fechas.min() == fechas.max() -> " (del ${fechaCorta(fechas.min())})"
+        else -> " (del ${fechaCorta(fechas.min())} al ${fechaCorta(fechas.max())})"
+    }
+    AlertDialog(
+        onDismissRequest = alCancelar,
+        title = { Text("¿Restaurar este respaldo?") },
+        text = {
+            Text(
+                "Respaldo guardado ${momentoDe(propuesta.contenido.creadoEn)}, con " +
+                    (if (pedidos.size == 1) "1 pedido" else "${pedidos.size} pedidos") + "$rango.\n\n" +
+                    if (propuesta.pedidosActuales > 0) {
+                        "Lo que hay ahora en este celular (${propuesta.pedidosActuales} " +
+                            (if (propuesta.pedidosActuales == 1) "pedido" else "pedidos") +
+                            ") se reemplazará por los datos del respaldo."
+                    } else {
+                        "Este celular no tiene pedidos todavía."
+                    },
+            )
+        },
+        confirmButton = { TextButton(onClick = alConfirmar) { Text("Restaurar") } },
+        dismissButton = { TextButton(onClick = alCancelar) { Text("Cancelar") } },
+    )
+}
+
+// "1 de noviembre"
+private fun fechaCorta(fecha: LocalDate): String = fechaLarga(fecha).substringAfter(" ")
+
+// Abre el menú de "Compartir" de Android con el archivo de respaldo.
+private fun compartirArchivo(contexto: Context, uri: Uri) {
+    val intent = Intent(Intent.ACTION_SEND)
+        .setType("application/json")
+        .putExtra(Intent.EXTRA_STREAM, uri)
+        .putExtra(Intent.EXTRA_SUBJECT, "Respaldo Almuerzos Chelita")
+        // Da permiso a la app elegida (WhatsApp, Drive...) para leer el archivo.
+        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    contexto.startActivity(Intent.createChooser(intent, "Enviar respaldo"))
 }
 
 @Composable

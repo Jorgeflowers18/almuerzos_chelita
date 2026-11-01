@@ -92,6 +92,7 @@ fun Navegacion(viewModel: NavegacionViewModel = viewModel(factory = FabricaViewM
                     alNuevoPedido = { abrirPedido(0) },
                     alAbrirPedido = abrirPedido,
                     alCobrar = abrirCobro,
+                    alConfigurarRespaldos = { nav.irASeccion(Seccion.ADMINISTRACION) },
                 )
             }
             composable(Rutas.POR_SERVIR) {
