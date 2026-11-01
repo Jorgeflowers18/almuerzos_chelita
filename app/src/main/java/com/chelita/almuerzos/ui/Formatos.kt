@@ -3,8 +3,10 @@ package com.chelita.almuerzos.ui
 import com.chelita.almuerzos.datos.PedidoConLineas
 import com.chelita.almuerzos.dominio.comoDinero
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 // Textos que se repiten en varias pantallas.
 
@@ -23,6 +25,20 @@ fun textoTarrinas(segundo: Int, sopa: Int, proteina: Int): String {
     }
     return "Tarrinas (${partes.joinToString(", ")})"
 }
+
+private val espanol = Locale.forLanguageTag("es")
+
+// "Domingo 1 de noviembre"
+fun fechaLarga(fecha: LocalDate): String =
+    fecha.format(DateTimeFormatter.ofPattern("EEEE d 'de' MMMM", espanol)).replaceFirstChar { it.uppercase() }
+
+// "Domingo 1", para listas donde el mes ya se sabe.
+fun diaDelMes(fecha: LocalDate): String =
+    fecha.format(DateTimeFormatter.ofPattern("EEEE d", espanol)).replaceFirstChar { it.uppercase() }
+
+// "Noviembre 2026"
+fun mesYAnio(fecha: LocalDate): String =
+    fecha.format(DateTimeFormatter.ofPattern("MMMM yyyy", espanol)).replaceFirstChar { it.uppercase() }
 
 // La hora en que se tomó el pedido: "12:35"
 fun horaDe(milisegundos: Long, zona: ZoneId = ZoneId.systemDefault()): String =

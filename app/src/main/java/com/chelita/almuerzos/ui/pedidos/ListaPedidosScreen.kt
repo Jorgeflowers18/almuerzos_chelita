@@ -44,10 +44,9 @@ import com.chelita.almuerzos.dominio.comoDinero
 import com.chelita.almuerzos.ui.EtiquetaEstado
 import com.chelita.almuerzos.ui.EtiquetaParaLlevar
 import com.chelita.almuerzos.ui.FabricaViewModels
+import com.chelita.almuerzos.ui.fechaLarga
 import com.chelita.almuerzos.ui.resumenProductos
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 // Pantalla principal: los pedidos del día.
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,7 +65,7 @@ fun ListaPedidosScreen(
                 title = {
                     Column {
                         Text("Pedidos de hoy")
-                        Text(fechaDeHoy(), style = MaterialTheme.typography.bodyMedium)
+                        Text(fechaLarga(LocalDate.now()), style = MaterialTheme.typography.bodyMedium)
                     }
                 },
             )
@@ -196,10 +195,4 @@ private fun MensajeVacio(filtro: FiltroPedidos) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
-}
-
-// "Domingo 1 de noviembre"
-private fun fechaDeHoy(): String {
-    val texto = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE d 'de' MMMM", Locale.forLanguageTag("es")))
-    return texto.replaceFirstChar { it.uppercase() }
 }

@@ -8,6 +8,7 @@ import com.chelita.almuerzos.dominio.Producto.ALMUERZO
 import com.chelita.almuerzos.dominio.Producto.PORCION_PROTEINA
 import com.chelita.almuerzos.dominio.Producto.SEGUNDO
 import com.chelita.almuerzos.dominio.Producto.SOPA
+import com.chelita.almuerzos.dominio.Rango
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -110,6 +111,22 @@ class PedidosRepositorioTest {
 
         val nombres = repo.pedidosDeHoy().first().map { it.pedido.nombre }
         assertEquals(listOf("Primero", "Segundo"), nombres)
+    }
+
+    @Test
+    fun `pedidos entre dos fechas incluye el primer y el ultimo dia`() = runTest {
+        hoy = LocalDate.of(2026, 10, 31)
+        repo.guardarPedido("Octubre", paraLlevar = false, mapOf(SOPA to 1))
+        hoy = LocalDate.of(2026, 11, 1)
+        repo.guardarPedido("Primero", paraLlevar = false, mapOf(SOPA to 1))
+        hoy = LocalDate.of(2026, 11, 30)
+        repo.guardarPedido("Ultimo", paraLlevar = false, mapOf(SOPA to 1))
+        hoy = LocalDate.of(2026, 12, 1)
+        repo.guardarPedido("Diciembre", paraLlevar = false, mapOf(SOPA to 1))
+
+        val noviembre = Rango(LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 30))
+        val nombres = repo.pedidosEntre(noviembre).first().map { it.pedido.nombre }
+        assertEquals(listOf("Primero", "Ultimo"), nombres)
     }
 
     @Test

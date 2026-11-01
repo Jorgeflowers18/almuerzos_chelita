@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -35,11 +36,13 @@ import com.chelita.almuerzos.ui.despacho.DespachoScreen
 import com.chelita.almuerzos.ui.pedidos.EditarPedidoScreen
 import com.chelita.almuerzos.ui.pedidos.EditarPedidoViewModel
 import com.chelita.almuerzos.ui.pedidos.ListaPedidosScreen
+import com.chelita.almuerzos.ui.resumen.ResumenScreen
 
 // Las "rutas" son las direcciones de cada pantalla, como las URLs de una página web.
 private object Rutas {
     const val PEDIDOS = "pedidos"
     const val POR_SERVIR = "por_servir"
+    const val RESUMEN = "resumen"
     const val PEDIDO = "pedido?${EditarPedidoViewModel.ARG_ID}={${EditarPedidoViewModel.ARG_ID}}"
     const val COBRO = "cobro/{${CobroViewModel.ARG_ID}}"
     fun pedido(id: Long) = "pedido?${EditarPedidoViewModel.ARG_ID}=$id"
@@ -51,6 +54,7 @@ private object Rutas {
 private enum class Seccion(val ruta: String, val etiqueta: String, val icono: ImageVector) {
     PEDIDOS(Rutas.PEDIDOS, "Pedidos", Icons.AutoMirrored.Filled.List),
     POR_SERVIR(Rutas.POR_SERVIR, "Por servir", Icons.Default.Notifications),
+    RESUMEN(Rutas.RESUMEN, "Resumen", Icons.Default.DateRange),
 }
 
 // Define qué pantalla se muestra en cada ruta y cómo se pasa de una a otra.
@@ -88,6 +92,9 @@ fun Navegacion(viewModel: NavegacionViewModel = viewModel(factory = FabricaViewM
             }
             composable(Rutas.POR_SERVIR) {
                 DespachoScreen(alAbrirPedido = abrirPedido)
+            }
+            composable(Rutas.RESUMEN) {
+                ResumenScreen()
             }
             composable(
                 Rutas.PEDIDO,

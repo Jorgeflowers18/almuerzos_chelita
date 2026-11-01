@@ -72,6 +72,14 @@ class FormatosTest {
     }
 
     @Test
+    fun `escribe las fechas en español`() {
+        val fecha = LocalDate.of(2026, 11, 1)
+        assertEquals("Domingo 1 de noviembre", fechaLarga(fecha))
+        assertEquals("Domingo 1", diaDelMes(fecha))
+        assertEquals("Noviembre 2026", mesYAnio(fecha))
+    }
+
+    @Test
     fun `muestra la hora del pedido`() {
         val mediodia = LocalDateTime.of(2026, 11, 2, 12, 5).toInstant(ZoneOffset.UTC).toEpochMilli()
         assertEquals("12:05", horaDe(mediodia, ZoneOffset.UTC))

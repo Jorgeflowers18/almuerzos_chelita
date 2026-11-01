@@ -4,6 +4,7 @@ import com.chelita.almuerzos.dominio.CalculadoraCobro
 import com.chelita.almuerzos.dominio.EstadoPedido
 import com.chelita.almuerzos.dominio.Precios
 import com.chelita.almuerzos.dominio.Producto
+import com.chelita.almuerzos.dominio.Rango
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -37,9 +38,11 @@ class PedidosRepositorio(
 
     fun observar(id: Long): Flow<PedidoConLineas?> = pedidoDao.observar(id)
 
+    fun pedidosEntre(rango: Rango): Flow<List<PedidoConLineas>> = pedidoDao.observarEntre(rango.desde, rango.hasta)
+
     // La fecha de hoy, revisada cada minuto: si la app queda abierta pasada la medianoche,
     // las pantallas cambian solas al día nuevo.
-    private fun fechaDeHoy(): Flow<LocalDate> = flow {
+    fun fechaDeHoy(): Flow<LocalDate> = flow {
         while (true) {
             emit(hoy())
             delay(60_000)

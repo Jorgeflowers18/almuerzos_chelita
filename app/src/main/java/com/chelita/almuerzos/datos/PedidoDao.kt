@@ -22,6 +22,11 @@ abstract class PedidoDao {
     @Query("SELECT * FROM pedidos WHERE fecha = :fecha ORDER BY creadoEn")
     abstract fun observarDelDia(fecha: LocalDate): Flow<List<PedidoConLineas>>
 
+    // Los pedidos entre dos fechas (ambas incluidas), para el resumen.
+    @Transaction
+    @Query("SELECT * FROM pedidos WHERE fecha BETWEEN :desde AND :hasta ORDER BY fecha, creadoEn")
+    abstract fun observarEntre(desde: LocalDate, hasta: LocalDate): Flow<List<PedidoConLineas>>
+
     @Transaction
     @Query("SELECT * FROM pedidos WHERE id = :id")
     abstract suspend fun obtener(id: Long): PedidoConLineas?
