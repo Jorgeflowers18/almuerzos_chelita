@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ícono provisional: un plato hondo blanco sobre fondo naranja -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,52 L78,52 A24,20 0 0,1 30,52 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M26,47 L82,47 L82,51 L26,51 Z" />
+</vector>

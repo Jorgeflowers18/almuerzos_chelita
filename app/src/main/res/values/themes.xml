@@ -1,0 +1,4 @@
+<resources>
+    <!-- Tema base de Android; los colores reales los define Compose en Theme.kt -->
+    <style name="Theme.AlmuerzosChelita" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
