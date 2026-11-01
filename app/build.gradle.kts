@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    // KSP genera automáticamente el código de la base de datos a partir de las anotaciones de Room.
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
 
 android {
@@ -38,6 +41,16 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        // Necesario para que Robolectric simule Android en las pruebas de la base de datos.
+        unitTests.isIncludeAndroidResources = true
+    }
+}
+
+room {
+    // Room guarda aquí una "foto" del esquema de cada versión de la base de datos.
+    // Se sube a git: sirve para escribir y probar migraciones cuando cambie el esquema.
+    schemaDirectory("$projectDir/schemas")
 }
 
 dependencies {
@@ -49,6 +62,12 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
     debugImplementation(libs.androidx.ui.tooling)
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
