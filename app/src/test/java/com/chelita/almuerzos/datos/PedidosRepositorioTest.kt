@@ -113,6 +113,18 @@ class PedidosRepositorioTest {
     }
 
     @Test
+    fun `observar un pedido entrega sus cambios y null si se elimina`() = runTest {
+        val id = repo.guardarPedido("Lucía", paraLlevar = false, mapOf(ALMUERZO to 1))
+        assertEquals(EstadoPedido.PENDIENTE, repo.observar(id).first()!!.pedido.estado)
+
+        repo.cambiarEstado(id, EstadoPedido.PAGADO)
+        assertEquals(EstadoPedido.PAGADO, repo.observar(id).first()!!.pedido.estado)
+
+        repo.eliminar(id)
+        assertNull(repo.observar(id).first())
+    }
+
+    @Test
     fun `cambia el estado de un pedido`() = runTest {
         val id = repo.guardarPedido("Pedro", paraLlevar = false, mapOf(ALMUERZO to 1))
         repo.cambiarEstado(id, EstadoPedido.PAGADO)

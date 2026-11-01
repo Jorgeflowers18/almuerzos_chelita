@@ -26,6 +26,11 @@ abstract class PedidoDao {
     @Query("SELECT * FROM pedidos WHERE id = :id")
     abstract suspend fun obtener(id: Long): PedidoConLineas?
 
+    // Igual que obtener, pero avisa cada vez que el pedido cambia (o null si se borró).
+    @Transaction
+    @Query("SELECT * FROM pedidos WHERE id = :id")
+    abstract fun observar(id: Long): Flow<PedidoConLineas?>
+
     @Query("UPDATE pedidos SET estado = :estado WHERE id = :id")
     abstract suspend fun cambiarEstado(id: Long, estado: EstadoPedido)
 

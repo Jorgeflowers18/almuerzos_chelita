@@ -58,6 +58,7 @@ import com.chelita.almuerzos.dominio.Producto
 import com.chelita.almuerzos.dominio.comoDinero
 import com.chelita.almuerzos.ui.Contador
 import com.chelita.almuerzos.ui.FabricaViewModels
+import com.chelita.almuerzos.ui.textoTarrinas
 
 // Pantalla para registrar un pedido nuevo o modificar uno existente.
 @OptIn(ExperimentalMaterial3Api::class)
@@ -277,7 +278,10 @@ private fun BarraTotal(cobro: Cobro, paraLlevar: Boolean, alGuardar: () -> Unit)
         ) {
             if (paraLlevar && cobro.costoTarrinas > 0) {
                 FilaMonto("Platos", cobro.subtotalPlatos.comoDinero())
-                FilaMonto(detalleTarrinas(cobro), cobro.costoTarrinas.comoDinero())
+                FilaMonto(
+                    textoTarrinas(cobro.tarrinasSegundo, cobro.tarrinasSopa, cobro.envasesProteina),
+                    cobro.costoTarrinas.comoDinero(),
+                )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -301,14 +305,4 @@ private fun FilaMonto(concepto: String, monto: String) {
         Text(concepto, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
         Text(monto, style = MaterialTheme.typography.bodyMedium)
     }
-}
-
-// "Tarrinas (2 segundo, 3 sopa, 1 proteína)"
-private fun detalleTarrinas(cobro: Cobro): String {
-    val partes = buildList {
-        if (cobro.tarrinasSegundo > 0) add("${cobro.tarrinasSegundo} segundo")
-        if (cobro.tarrinasSopa > 0) add("${cobro.tarrinasSopa} sopa")
-        if (cobro.envasesProteina > 0) add("${cobro.envasesProteina} proteína")
-    }
-    return "Tarrinas (${partes.joinToString(", ")})"
 }

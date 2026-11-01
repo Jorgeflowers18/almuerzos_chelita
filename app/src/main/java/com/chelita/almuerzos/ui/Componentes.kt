@@ -47,6 +47,15 @@ fun EtiquetaEstado(estado: EstadoPedido, paraLlevar: Boolean) {
     Etiqueta(estado.nombrePara(paraLlevar), fondo, texto)
 }
 
+// Verde azulado para todo lo "para llevar", así no se confunde con "Pendiente" (naranja).
+val FondoParaLlevar = Color(0xFFCCEDE8)
+val TextoParaLlevar = Color(0xFF00504A)
+
+@Composable
+fun EtiquetaParaLlevar() {
+    Etiqueta("Para llevar", FondoParaLlevar, TextoParaLlevar)
+}
+
 // Botones grandes de − y + con la cantidad en medio. Pensados para tocar rápido con el pulgar.
 @Composable
 fun Contador(cantidad: Int, alRestar: () -> Unit, alSumar: () -> Unit, descripcion: String) {

@@ -17,4 +17,12 @@ enum class Producto(val nombre: String) {
     // ¿Este producto incluye una sopa? (necesita tarrina pequeña para llevar)
     val llevaSopa: Boolean
         get() = this == ALMUERZO || this == ALMUERZO_MIXTO || this == SOPA
+
+    // ¿Lleva proteína extra dentro del mismo plato?
+    val esMixto: Boolean
+        get() = this == ALMUERZO_MIXTO || this == SEGUNDO_MIXTO
+
+    // El almuerzo y el segundo incluyen bebida sin costo.
+    val llevaBebida: Boolean
+        get() = llevaSegundo
 }

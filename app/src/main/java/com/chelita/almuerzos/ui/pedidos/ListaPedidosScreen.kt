@@ -23,6 +23,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -38,10 +39,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.chelita.almuerzos.datos.PedidoConLineas
+import com.chelita.almuerzos.dominio.EstadoPedido
 import com.chelita.almuerzos.dominio.comoDinero
 import com.chelita.almuerzos.ui.EtiquetaEstado
-import com.chelita.almuerzos.ui.Etiqueta
+import com.chelita.almuerzos.ui.EtiquetaParaLlevar
 import com.chelita.almuerzos.ui.FabricaViewModels
+import com.chelita.almuerzos.ui.resumenProductos
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -52,6 +55,7 @@ import java.util.Locale
 fun ListaPedidosScreen(
     alNuevoPedido: () -> Unit,
     alAbrirPedido: (Long) -> Unit,
+    alCobrar: (Long) -> Unit,
     viewModel: ListaPedidosViewModel = viewModel(factory = FabricaViewModels),
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
@@ -92,6 +96,7 @@ fun ListaPedidosScreen(
                         TarjetaPedido(
                             pedido = pedido,
                             alTocar = { alAbrirPedido(pedido.pedido.id) },
+                            alCobrar = { alCobrar(pedido.pedido.id) },
                             alAvanzarEstado = { viewModel.avanzarEstado(pedido) },
                         )
                     }
@@ -124,7 +129,12 @@ private fun FiltrosEstado(
 }
 
 @Composable
-private fun TarjetaPedido(pedido: PedidoConLineas, alTocar: () -> Unit, alAvanzarEstado: () -> Unit) {
+private fun TarjetaPedido(
+    pedido: PedidoConLineas,
+    alTocar: () -> Unit,
+    alCobrar: () -> Unit,
+    alAvanzarEstado: () -> Unit,
+) {
     val p = pedido.pedido
     Card(
         onClick = alTocar,
@@ -146,13 +156,7 @@ private fun TarjetaPedido(pedido: PedidoConLineas, alTocar: () -> Unit, alAvanza
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 EtiquetaEstado(p.estado, p.paraLlevar)
-                if (p.paraLlevar) {
-                    Etiqueta(
-                        "Para llevar",
-                        MaterialTheme.colorScheme.primaryContainer,
-                        MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                }
+                if (p.paraLlevar) EtiquetaParaLlevar()
             }
             Text(resumenProductos(pedido), style = MaterialTheme.typography.bodyLarge)
             if (p.observaciones.isNotBlank()) {
@@ -163,9 +167,14 @@ private fun TarjetaPedido(pedido: PedidoConLineas, alTocar: () -> Unit, alAvanza
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            p.estado.siguiente?.let { siguiente ->
-                Button(onClick = alAvanzarEstado, modifier = Modifier.fillMaxWidth()) {
-                    Text("Marcar ${siguiente.nombrePara(p.paraLlevar).lowercase()}")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = alCobrar, modifier = Modifier.weight(1f)) {
+                    Text(if (p.estado == EstadoPedido.PAGADO) "Ver cobro" else "Cobrar")
+                }
+                p.estado.siguiente?.let { siguiente ->
+                    Button(onClick = alAvanzarEstado, modifier = Modifier.weight(1f)) {
+                        Text("Marcar ${siguiente.nombrePara(p.paraLlevar).lowercase()}")
+                    }
                 }
             }
         }
@@ -188,12 +197,6 @@ private fun MensajeVacio(filtro: FiltroPedidos) {
         )
     }
 }
-
-// "2 Almuerzo · 1 Sopa", en el orden del menú.
-private fun resumenProductos(pedido: PedidoConLineas): String =
-    pedido.lineas
-        .sortedBy { it.producto.ordinal }
-        .joinToString(" · ") { "${it.cantidad} ${it.producto.nombre}" }
 
 // "Domingo 1 de noviembre"
 private fun fechaDeHoy(): String {

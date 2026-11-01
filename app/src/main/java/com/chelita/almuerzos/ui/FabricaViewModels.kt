@@ -6,14 +6,19 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.chelita.almuerzos.AlmuerzosApp
+import com.chelita.almuerzos.ui.cobro.CobroViewModel
+import com.chelita.almuerzos.ui.despacho.DespachoViewModel
 import com.chelita.almuerzos.ui.pedidos.EditarPedidoViewModel
 import com.chelita.almuerzos.ui.pedidos.ListaPedidosViewModel
 
 // Le dice a Android cómo crear cada ViewModel, entregándole el repositorio de la app.
 // Al agregar una pantalla nueva con ViewModel, se agrega aquí su "initializer".
 val FabricaViewModels = viewModelFactory {
+    initializer { NavegacionViewModel(app().repositorio) }
     initializer { ListaPedidosViewModel(app().repositorio) }
     initializer { EditarPedidoViewModel(app().repositorio, createSavedStateHandle()) }
+    initializer { DespachoViewModel(app().repositorio) }
+    initializer { CobroViewModel(app().repositorio, createSavedStateHandle()) }
 }
 
 private fun CreationExtras.app(): AlmuerzosApp =

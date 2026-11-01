@@ -4,8 +4,13 @@ import com.chelita.almuerzos.dominio.CalculadoraCobro
 import com.chelita.almuerzos.dominio.EstadoPedido
 import com.chelita.almuerzos.dominio.Precios
 import com.chelita.almuerzos.dominio.Producto
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 
@@ -24,9 +29,22 @@ class PedidosRepositorio(
     // Precios vigentes; si nunca se editaron, los de por defecto.
     val precios: Flow<Precios> = configuracionDao.observar().map { it?.aPrecios() ?: Precios() }
 
-    fun pedidosDeHoy(): Flow<List<PedidoConLineas>> = pedidoDao.observarDelDia(hoy())
+    // "flatMapLatest": cada vez que cambia la fecha, deja de observar el día anterior y observa el nuevo.
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun pedidosDeHoy(): Flow<List<PedidoConLineas>> = fechaDeHoy().flatMapLatest { pedidoDao.observarDelDia(it) }
 
     suspend fun obtener(id: Long): PedidoConLineas? = pedidoDao.obtener(id)
+
+    fun observar(id: Long): Flow<PedidoConLineas?> = pedidoDao.observar(id)
+
+    // La fecha de hoy, revisada cada minuto: si la app queda abierta pasada la medianoche,
+    // las pantallas cambian solas al día nuevo.
+    private fun fechaDeHoy(): Flow<LocalDate> = flow {
+        while (true) {
+            emit(hoy())
+            delay(60_000)
+        }
+    }.distinctUntilChanged()
 
     /**
      * Crea un pedido nuevo (id = 0) o modifica uno existente, calculando su cobro
