@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
@@ -30,6 +31,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.chelita.almuerzos.ui.administracion.AdministracionScreen
 import com.chelita.almuerzos.ui.cobro.CobroScreen
 import com.chelita.almuerzos.ui.cobro.CobroViewModel
 import com.chelita.almuerzos.ui.despacho.DespachoScreen
@@ -43,6 +45,7 @@ private object Rutas {
     const val PEDIDOS = "pedidos"
     const val POR_SERVIR = "por_servir"
     const val RESUMEN = "resumen"
+    const val ADMINISTRACION = "administracion"
     const val PEDIDO = "pedido?${EditarPedidoViewModel.ARG_ID}={${EditarPedidoViewModel.ARG_ID}}"
     const val COBRO = "cobro/{${CobroViewModel.ARG_ID}}"
     fun pedido(id: Long) = "pedido?${EditarPedidoViewModel.ARG_ID}=$id"
@@ -55,6 +58,7 @@ private enum class Seccion(val ruta: String, val etiqueta: String, val icono: Im
     PEDIDOS(Rutas.PEDIDOS, "Pedidos", Icons.AutoMirrored.Filled.List),
     POR_SERVIR(Rutas.POR_SERVIR, "Por servir", Icons.Default.Notifications),
     RESUMEN(Rutas.RESUMEN, "Resumen", Icons.Default.DateRange),
+    ADMINISTRACION(Rutas.ADMINISTRACION, "Ajustes", Icons.Default.Settings),
 }
 
 // Define qué pantalla se muestra en cada ruta y cómo se pasa de una a otra.
@@ -95,6 +99,9 @@ fun Navegacion(viewModel: NavegacionViewModel = viewModel(factory = FabricaViewM
             }
             composable(Rutas.RESUMEN) {
                 ResumenScreen()
+            }
+            composable(Rutas.ADMINISTRACION) {
+                AdministracionScreen()
             }
             composable(
                 Rutas.PEDIDO,

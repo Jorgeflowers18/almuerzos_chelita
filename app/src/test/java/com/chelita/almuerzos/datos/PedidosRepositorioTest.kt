@@ -130,6 +130,41 @@ class PedidosRepositorioTest {
     }
 
     @Test
+    fun `borra solo los pedidos de mas de 2 meses`() = runTest {
+        hoy = LocalDate.of(2026, 9, 17)
+        repo.guardarPedido("Viejo", paraLlevar = false, mapOf(ALMUERZO to 1, SOPA to 1))
+        repo.guardarMenu("Seco", "Locro")
+        hoy = LocalDate.of(2026, 9, 18)
+        repo.guardarPedido("Justo en el límite", paraLlevar = false, mapOf(SOPA to 1))
+        hoy = LocalDate.of(2026, 11, 18)
+        repo.guardarPedido("De hoy", paraLlevar = false, mapOf(SOPA to 1))
+
+        assertEquals(1, repo.pedidosAntiguos().first())
+        assertEquals(1, repo.borrarAntiguos())
+
+        assertEquals(0, repo.pedidosAntiguos().first())
+        val quedan = repo.pedidosEntre(Rango(LocalDate.of(2026, 1, 1), hoy)).first().map { it.pedido.nombre }
+        assertEquals(listOf("Justo en el límite", "De hoy"), quedan)
+        val cursor = db.openHelper.readableDatabase.query("SELECT COUNT(*) FROM menu_dia")
+        cursor.moveToFirst()
+        assertEquals(0, cursor.getInt(0))
+        cursor.close()
+    }
+
+    @Test
+    fun `guarda el menu de hoy y lo reemplaza si se edita`() = runTest {
+        assertNull(repo.menuDeHoy().first())
+
+        repo.guardarMenu(" Seco de pollo ", "Locro")
+        repo.guardarMenu("Seco de pollo", "Sopa de quinua")
+
+        val menu = repo.menuDeHoy().first()!!
+        assertEquals("Seco de pollo", menu.segundo)
+        assertEquals("Sopa de quinua", menu.sopa)
+        assertEquals(hoy, menu.fecha)
+    }
+
+    @Test
     fun `observar un pedido entrega sus cambios y null si se elimina`() = runTest {
         val id = repo.guardarPedido("Lucía", paraLlevar = false, mapOf(ALMUERZO to 1))
         assertEquals(EstadoPedido.PENDIENTE, repo.observar(id).first()!!.pedido.estado)

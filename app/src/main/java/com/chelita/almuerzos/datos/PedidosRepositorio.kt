@@ -5,6 +5,7 @@ import com.chelita.almuerzos.dominio.EstadoPedido
 import com.chelita.almuerzos.dominio.Precios
 import com.chelita.almuerzos.dominio.Producto
 import com.chelita.almuerzos.dominio.Rango
+import com.chelita.almuerzos.dominio.limiteDeLimpieza
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -92,4 +93,22 @@ class PedidosRepositorio(
     suspend fun eliminar(id: Long) = pedidoDao.eliminar(id)
 
     suspend fun guardarPrecios(precios: Precios) = configuracionDao.guardar(ConfiguracionEntity.desde(precios))
+
+    // El menú anotado para hoy, o null si todavía no se anota.
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun menuDeHoy(): Flow<MenuDiaEntity?> = fechaDeHoy().flatMapLatest { configuracionDao.observarMenu(it) }
+
+    suspend fun guardarMenu(segundo: String, sopa: String) =
+        configuracionDao.guardarMenu(MenuDiaEntity(fecha = hoy(), segundo = segundo.trim(), sopa = sopa.trim()))
+
+    // Cuántos pedidos hay de antes de la fecha límite de limpieza.
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun pedidosAntiguos(): Flow<Int> = fechaDeHoy().flatMapLatest { pedidoDao.contarAntesDe(limiteDeLimpieza(it)) }
+
+    // Borra los pedidos y menús de más de 2 meses. Devuelve cuántos pedidos borró.
+    suspend fun borrarAntiguos(): Int {
+        val limite = limiteDeLimpieza(hoy())
+        configuracionDao.borrarMenusAntesDe(limite)
+        return pedidoDao.borrarAntesDe(limite)
+    }
 }

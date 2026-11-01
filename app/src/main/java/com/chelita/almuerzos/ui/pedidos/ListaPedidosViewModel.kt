@@ -2,6 +2,7 @@ package com.chelita.almuerzos.ui.pedidos
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.chelita.almuerzos.datos.MenuDiaEntity
 import com.chelita.almuerzos.datos.PedidoConLineas
 import com.chelita.almuerzos.datos.PedidosRepositorio
 import com.chelita.almuerzos.dominio.EstadoPedido
@@ -26,6 +27,7 @@ data class EstadoListaPedidos(
     val pedidos: List<PedidoConLineas> = emptyList(),
     val filtro: FiltroPedidos = FiltroPedidos.TODOS,
     val conteos: Map<FiltroPedidos, Int> = emptyMap(),
+    val menu: MenuDiaEntity? = null,
 )
 
 // Un ViewModel sobrevive mientras la pantalla exista y guarda su estado.
@@ -34,10 +36,10 @@ class ListaPedidosViewModel(private val repositorio: PedidosRepositorio) : ViewM
 
     private val filtro = MutableStateFlow(FiltroPedidos.TODOS)
 
-    // "combine" junta dos flujos: cada vez que cambian los pedidos o el filtro,
+    // "combine" junta varios flujos: cada vez que cambian los pedidos, el filtro o el menú,
     // se recalcula lo que muestra la pantalla.
     val estado: StateFlow<EstadoListaPedidos> =
-        combine(repositorio.pedidosDeHoy(), filtro) { pedidos, filtroActual ->
+        combine(repositorio.pedidosDeHoy(), filtro, repositorio.menuDeHoy()) { pedidos, filtroActual, menu ->
             EstadoListaPedidos(
                 cargando = false,
                 pedidos = pedidos.filter { filtroActual.estado == null || it.pedido.estado == filtroActual.estado },
@@ -45,6 +47,7 @@ class ListaPedidosViewModel(private val repositorio: PedidosRepositorio) : ViewM
                 conteos = FiltroPedidos.entries.associateWith { f ->
                     pedidos.count { f.estado == null || it.pedido.estado == f.estado }
                 },
+                menu = menu,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), EstadoListaPedidos())
 

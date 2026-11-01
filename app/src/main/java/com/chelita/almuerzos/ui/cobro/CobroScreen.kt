@@ -54,6 +54,7 @@ import com.chelita.almuerzos.datos.PedidoConLineas
 import com.chelita.almuerzos.dominio.EstadoPedido
 import com.chelita.almuerzos.dominio.aCentavos
 import com.chelita.almuerzos.dominio.comoDinero
+import com.chelita.almuerzos.dominio.comoMonto
 import com.chelita.almuerzos.dominio.montosSugeridos
 import com.chelita.almuerzos.ui.EtiquetaEstado
 import com.chelita.almuerzos.ui.EtiquetaParaLlevar
@@ -187,7 +188,7 @@ private fun CalculadoraVuelto(total: Int, recibido: String, alCambiar: (String) 
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             (listOf(total) + montosSugeridos(total)).forEach { monto ->
                 // El campo muestra el monto sin el "$", porque el "$" ya está fijo a la izquierda.
-                val texto = monto.comoDinero().removePrefix("$")
+                val texto = monto.comoMonto()
                 FilterChip(
                     selected = centavos == monto,
                     onClick = {

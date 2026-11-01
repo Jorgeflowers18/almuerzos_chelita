@@ -35,6 +35,14 @@ class PeriodoTest {
     }
 
     @Test
+    fun `la limpieza nunca toca el mes anterior`() {
+        assertEquals(LocalDate.of(2026, 9, 18), limiteDeLimpieza(hoy))
+        // Aun el día 1 o el 31, el límite cae antes de que empiece el mes anterior.
+        assertEquals(LocalDate.of(2026, 9, 1), limiteDeLimpieza(LocalDate.of(2026, 11, 1)))
+        assertEquals(LocalDate.of(2027, 1, 31), limiteDeLimpieza(LocalDate.of(2027, 3, 31)))
+    }
+
+    @Test
     fun `respeta los febreros de año bisiesto`() {
         assertEquals(
             Rango(LocalDate.of(2028, 2, 1), LocalDate.of(2028, 2, 29)),

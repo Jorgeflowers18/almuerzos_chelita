@@ -22,4 +22,7 @@ interface ConfiguracionDao {
 
     @Upsert
     suspend fun guardarMenu(menu: MenuDiaEntity)
+
+    @Query("DELETE FROM menu_dia WHERE fecha < :fecha")
+    suspend fun borrarMenusAntesDe(fecha: LocalDate)
 }

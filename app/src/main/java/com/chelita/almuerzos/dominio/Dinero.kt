@@ -7,6 +7,9 @@ fun Int.comoDinero(): String {
     return "$$dolares.$centavos"
 }
 
+// El monto sin el "$", para los campos de texto que ya muestran el "$" fijo: 250 -> "2.50"
+fun Int.comoMonto(): String = comoDinero().removePrefix("$")
+
 // Convierte lo que escribe la mesera ("10", "7.5", "7,50", "$8") a centavos.
 // Devuelve null si no es un monto válido.
 fun String.aCentavos(): Int? {

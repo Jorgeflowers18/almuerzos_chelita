@@ -42,6 +42,13 @@ abstract class PedidoDao {
     @Query("DELETE FROM pedidos WHERE id = :id")
     abstract suspend fun eliminar(id: Long)
 
+    @Query("SELECT COUNT(*) FROM pedidos WHERE fecha < :fecha")
+    abstract fun contarAntesDe(fecha: LocalDate): Flow<Int>
+
+    // Borra los pedidos viejos (sus líneas se borran solas) y devuelve cuántos borró.
+    @Query("DELETE FROM pedidos WHERE fecha < :fecha")
+    abstract suspend fun borrarAntesDe(fecha: LocalDate): Int
+
     // Guarda el pedido con sus líneas dentro de una transacción: o se guarda todo o nada,
     // así nunca queda un pedido a medias si algo falla.
     @Transaction

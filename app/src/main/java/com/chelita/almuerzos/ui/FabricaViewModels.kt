@@ -6,6 +6,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.chelita.almuerzos.AlmuerzosApp
+import com.chelita.almuerzos.ui.administracion.AdministracionViewModel
 import com.chelita.almuerzos.ui.cobro.CobroViewModel
 import com.chelita.almuerzos.ui.despacho.DespachoViewModel
 import com.chelita.almuerzos.ui.pedidos.EditarPedidoViewModel
@@ -21,6 +22,7 @@ val FabricaViewModels = viewModelFactory {
     initializer { DespachoViewModel(app().repositorio) }
     initializer { CobroViewModel(app().repositorio, createSavedStateHandle()) }
     initializer { ResumenViewModel(app().repositorio) }
+    initializer { AdministracionViewModel(app().repositorio) }
 }
 
 private fun CreationExtras.app(): AlmuerzosApp =

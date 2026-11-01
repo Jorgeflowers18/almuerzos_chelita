@@ -6,6 +6,10 @@ import java.time.YearMonth
 // Un rango de fechas, incluidos el primer y el último día.
 data class Rango(val desde: LocalDate, val hasta: LocalDate)
 
+// Los pedidos de antes de esta fecha se pueden borrar: se conservan los 2 últimos meses,
+// así el resumen del mes anterior siempre está completo.
+fun limiteDeLimpieza(hoy: LocalDate): LocalDate = hoy.minusMonths(2)
+
 // Los periodos que se pueden ver en el resumen.
 enum class Periodo(val etiqueta: String) {
     HOY("Hoy"),

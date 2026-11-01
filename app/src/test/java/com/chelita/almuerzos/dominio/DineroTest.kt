@@ -20,6 +20,13 @@ class DineroTest {
     }
 
     @Test
+    fun `escribe montos sin el simbolo para los campos de texto`() {
+        assertEquals("2.50", 250.comoMonto())
+        assertEquals("0.05", 5.comoMonto())
+        assertEquals("10.00", 1000.comoMonto())
+    }
+
+    @Test
     fun `rechaza lo que no es un monto`() {
         assertNull("".aCentavos())
         assertNull("abc".aCentavos())

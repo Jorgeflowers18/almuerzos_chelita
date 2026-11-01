@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
@@ -25,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -38,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.chelita.almuerzos.datos.MenuDiaEntity
 import com.chelita.almuerzos.datos.PedidoConLineas
 import com.chelita.almuerzos.dominio.EstadoPedido
 import com.chelita.almuerzos.dominio.comoDinero
@@ -81,6 +84,7 @@ fun ListaPedidosScreen(
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+            estado.menu?.let { MenuDeHoy(it) }
             FiltrosEstado(estado.filtro, estado.conteos, viewModel::elegirFiltro)
 
             when {
@@ -102,6 +106,28 @@ fun ListaPedidosScreen(
                 }
             }
         }
+    }
+}
+
+// "Segundo: Seco de pollo · Sopa: Locro de papa", lo que se haya anotado en Ajustes.
+@Composable
+private fun MenuDeHoy(menu: MenuDiaEntity) {
+    val partes = buildList {
+        if (menu.segundo.isNotBlank()) add("Segundo: ${menu.segundo}")
+        if (menu.sopa.isNotBlank()) add("Sopa: ${menu.sopa}")
+    }
+    if (partes.isEmpty()) return
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+    ) {
+        Text(
+            partes.joinToString(" · "),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+        )
     }
 }
 
