@@ -12,6 +12,6 @@ App Android nativa (Kotlin + Jetpack Compose + Room) para que las meseras regist
 | **6. Resumen** | Totales del día, del mes actual y del mes anterior | Ver lo vendido, lo cobrado y lo que falta cobrar, por producto y día por día | Hecha |
 | **7. Administración** | Precios, menú del día y limpieza de datos de más de 2 meses | Cambiar precios, anotar el menú y borrar pedidos antiguos desde "Ajustes" | Hecha |
 | **8. Respaldos** | Respaldo automático en una carpeta del celular (un solo archivo que se reemplaza), respaldo antes de limpiar, enviar (WhatsApp/Drive) y restaurar | Pasar los datos a otro celular, y recuperarlos tras desinstalar la app | Hecha |
-| **9. Publicación** | Crear la clave de firma, generar la APK firmada e instalarla | La APK final en el celular de ellas | Pendiente |
+| **9. Publicación** | Crear la clave de firma, generar la APK firmada e instalarla | La APK final en el celular de ellas (ver `docs/publicacion.md`) | Hecha |
 
 Al terminar cada fase hacemos un commit, para tener siempre una versión que funcione.

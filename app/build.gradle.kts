@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -19,16 +21,42 @@ android {
         targetSdk = 35
         // Subir versionCode en 1 cada vez que se entregue una APK nueva.
         versionCode = 1
-        versionName = "0.1.0"
+        versionName = "1.0.0"
+    }
+
+    // La clave con la que se firma la APK para el celular de ellas. Sus datos están en
+    // keystore.properties (fuera de git). TODAS las versiones deben firmarse con la misma
+    // clave: con otra, Android obliga a desinstalar la app y se pierden los datos.
+    val datosFirma = rootProject.file("keystore.properties")
+    signingConfigs {
+        if (datosFirma.exists()) {
+            val firma = Properties().apply { datosFirma.inputStream().use { load(it) } }
+            create("release") {
+                storeFile = file(firma.getProperty("storeFile"))
+                storePassword = firma.getProperty("storePassword")
+                keyAlias = firma.getProperty("keyAlias")
+                keyPassword = firma.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8 quita el código que no se usa: la APK pesa mucho menos.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.findByName("release")
+        }
+        debug {
+            // La versión de prueba se instala como otra app ("Chelita PRUEBA"), así nunca
+            // choca con la versión real ni con sus datos si se instalan en el mismo celular.
+            applicationIdSuffix = ".prueba"
+            versionNameSuffix = "-prueba"
+            resValue("string", "app_name", "Chelita PRUEBA")
         }
     }
     compileOptions {
